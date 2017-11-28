@@ -33,16 +33,21 @@ update msg model =
         NewInput txt ->
             ( { model | currentInput = txt }, Cmd.none )
         NextOperator op ->
-            if model.currentOp == Op.None then
-                ( { model | currentOp = op, result = parseFloat model.currentInput, currentInput = "" }, Cmd.none)
-            else
-                let
-                    result = Op.executeOp model.currentOp model.result (parseFloat model.currentInput)
-                in
-                    ({ model | result = result, currentOp = op, currentInput = "" }, Cmd.none)
+            handleNextOp model op
 
 parseFloat : String -> Float
 parseFloat = Result.withDefault 0.0 << String.toFloat
+
+handleNextOp : Model -> Op.Op -> ( Model, Cmd Msg )
+handleNextOp model op =
+    if model.currentOp == Op.None then
+        ( { model | currentOp = op, result = parseFloat model.currentInput, currentInput = "" }, Cmd.none )
+    else
+        let
+            result = parseFloat model.currentInput
+                        |> Op.executeOp model.currentOp model.result
+        in
+            ({ model | result = result, currentOp = op, currentInput = "" }, Cmd.none)
 
 
 -- View
