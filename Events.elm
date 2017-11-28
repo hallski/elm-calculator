@@ -4,6 +4,7 @@ import Html.Events exposing (on, keyCode)
 import Html exposing (Attribute)
 import Json.Decode as Json
 
+
 onEnter : msg -> Attribute msg
 onEnter msg =
     let
@@ -14,5 +15,3 @@ onEnter msg =
                 Json.fail "not Enter"
     in
         on "keydown" (Json.andThen isEnter keyCode)
-
-

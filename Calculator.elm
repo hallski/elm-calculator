@@ -44,6 +44,7 @@ update msg model =
 parseFloat : String -> Float
 parseFloat = Result.withDefault 0.0 << String.toFloat
 
+
 -- View
 viewButtonRow : Html Msg
 viewButtonRow =

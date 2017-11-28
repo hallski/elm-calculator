@@ -3,7 +3,9 @@ module Op exposing (..)
 import Html exposing (Html, button, text)
 import Html.Events exposing (onClick)
 
+
 type Op = None | Add | Minus | Multi | Div | Eql
+
 
 executeOp : Op -> Float -> Float -> Float
 executeOp op lhs rhs =
