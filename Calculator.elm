@@ -2,11 +2,10 @@ module Calculator exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (keyCode, on, onClick, onInput)
-
-import Json.Decode as Json
+import Html.Events exposing (onClick, onInput)
 
 import Op
+import Events
 
 
 -- Model
@@ -62,7 +61,7 @@ view model =
         [ div [ class "result" ] [ toString model.result |> text ]
         , Op.toString model.currentOp |> text
         , input
-            [ onEnter (NextOperator Op.Eql)
+            [ Events.onEnter (NextOperator Op.Eql)
             , onInput NewInput
             , value model.currentInput
             , autofocus True
@@ -70,17 +69,6 @@ view model =
             []
         , viewButtonRow
        ]
-
-onEnter : Msg -> Attribute Msg
-onEnter msg =
-    let
-        isEnter code =
-            if code == 13 then
-                Json.succeed msg
-            else
-                Json.fail "not Enter"
-    in
-        on "keydown" (Json.andThen isEnter keyCode)
 
 
 -- Main
