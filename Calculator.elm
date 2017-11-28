@@ -2,12 +2,13 @@ module Calculator exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (keyCode, on, onClick, onInput)
 
-import Html.Events exposing (onClick, onInput)
+import Json.Decode as Json
 
 
 -- Model
-type Op = None | Add | Minus | Multi | Div
+type Op = None | Add | Minus | Multi | Div | Eql
 
 type alias Model =
     { currentInput : String
@@ -23,9 +24,7 @@ init =
 -- Update
 type Msg
     = NewInput (String)
-    | PlusClick | MinusClick
-    | MultClick | DivClick
-    | EqlClick
+    | NextOperator (Op)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -33,33 +32,37 @@ update msg model =
     case msg of
         NewInput txt ->
             ( { model | currentInput = txt }, Cmd.none )
-        PlusClick ->
-            ( { model | result = model.result + parseFloat model.currentInput
-                      , currentInput = ""}, Cmd.none )
-        MinusClick ->
-            ( { model | result = model.result - parseFloat model.currentInput
-                      , currentInput = "" }, Cmd.none )
-        MultClick ->
-            ( { model | result = model.result * parseFloat model.currentInput
-                      , currentInput = "" }, Cmd.none )
-        DivClick ->
-            ( { model | result = model.result / parseFloat model.currentInput
-                      , currentInput = "" }, Cmd.none )
-        EqlClick -> (model, Cmd.none)
+        NextOperator op ->
+            if model.currentOp == None then
+                ( { model | currentOp = op, result = parseFloat model.currentInput, currentInput = "" }, Cmd.none)
+            else
+                let
+                    result = executeOp model.currentOp model.result (parseFloat model.currentInput)
+                in
+                    ({ model | result = result, currentOp = op, currentInput = "" }, Cmd.none)
 
 parseFloat : String -> Float
 parseFloat = Result.withDefault 0.0 << String.toFloat
 
+executeOp : Op -> Float -> Float -> Float
+executeOp op lhs rhs =
+    case op of
+        Add -> lhs + rhs
+        Minus -> lhs - rhs
+        Multi -> lhs * rhs
+        Div -> lhs / rhs
+        Eql -> lhs
+        None -> lhs
 
 -- View
 viewButtonRow : Html Msg
 viewButtonRow =
     div []
-        [ viewOpButton PlusClick "+"
-        , viewOpButton MinusClick "-"
-        , viewOpButton MultClick "*"
-        , viewOpButton DivClick "/"
-        , viewOpButton EqlClick "="
+        [ viewOpButton (NextOperator Add) "+"
+        , viewOpButton (NextOperator Minus) "-"
+        , viewOpButton (NextOperator Multi) "*"
+        , viewOpButton (NextOperator Div) "/"
+        , viewOpButton (NextOperator Eql) "="
         ]
 
 viewOpButton : Msg -> String -> Html Msg
@@ -70,8 +73,10 @@ view : Model -> Html Msg
 view model =
     div [ ]
         [ div [ class "result" ] [ toString model.result |> text ]
+        , opToText model.currentOp
         , input
-            [ onInput NewInput
+            [ onEnter (NextOperator Eql)
+            , onInput NewInput
             , value model.currentInput
             , autofocus True
             ]
@@ -79,6 +84,28 @@ view model =
         , viewButtonRow
        ]
 
+opToText : Op -> Html Msg
+opToText op =
+    let
+        opString = case op of
+            Add -> "+"
+            Minus -> "-"
+            Multi -> "*"
+            Div -> "/"
+            _ -> ""
+    in
+        text opString
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Json.succeed msg
+            else
+                Json.fail "not Enter"
+    in
+        on "keydown" (Json.andThen isEnter keyCode)
 
 -- Main
 
