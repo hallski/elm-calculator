@@ -6,25 +6,26 @@ import Html.Events exposing (keyCode, on, onClick, onInput)
 
 import Json.Decode as Json
 
+import Op
+
 
 -- Model
-type Op = None | Add | Minus | Multi | Div | Eql
 
 type alias Model =
     { currentInput : String
     , result : Float
-    , currentOp : Op
+    , currentOp : Op.Op
     }
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" 0 None, Cmd.none )
+    ( Model "" 0 Op.None, Cmd.none )
 
 
 -- Update
 type Msg
     = NewInput (String)
-    | NextOperator (Op)
+    | NextOperator (Op.Op)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -33,49 +34,35 @@ update msg model =
         NewInput txt ->
             ( { model | currentInput = txt }, Cmd.none )
         NextOperator op ->
-            if model.currentOp == None then
+            if model.currentOp == Op.None then
                 ( { model | currentOp = op, result = parseFloat model.currentInput, currentInput = "" }, Cmd.none)
             else
                 let
-                    result = executeOp model.currentOp model.result (parseFloat model.currentInput)
+                    result = Op.executeOp model.currentOp model.result (parseFloat model.currentInput)
                 in
                     ({ model | result = result, currentOp = op, currentInput = "" }, Cmd.none)
 
 parseFloat : String -> Float
 parseFloat = Result.withDefault 0.0 << String.toFloat
 
-executeOp : Op -> Float -> Float -> Float
-executeOp op lhs rhs =
-    case op of
-        Add -> lhs + rhs
-        Minus -> lhs - rhs
-        Multi -> lhs * rhs
-        Div -> lhs / rhs
-        Eql -> lhs
-        None -> lhs
-
 -- View
 viewButtonRow : Html Msg
 viewButtonRow =
     div []
-        [ viewOpButton (NextOperator Add) "+"
-        , viewOpButton (NextOperator Minus) "-"
-        , viewOpButton (NextOperator Multi) "*"
-        , viewOpButton (NextOperator Div) "/"
-        , viewOpButton (NextOperator Eql) "="
+        [ Op.viewOpButton NextOperator Op.Add
+        , Op.viewOpButton NextOperator Op.Minus
+        , Op.viewOpButton NextOperator Op.Multi
+        , Op.viewOpButton NextOperator Op.Div
+        , Op.viewOpButton NextOperator Op.Eql
         ]
-
-viewOpButton : Msg -> String -> Html Msg
-viewOpButton msg name =
-    button [ onClick msg ] [ text name ]
 
 view : Model -> Html Msg
 view model =
     div [ ]
         [ div [ class "result" ] [ toString model.result |> text ]
-        , opToText model.currentOp
+        , Op.toString model.currentOp |> text
         , input
-            [ onEnter (NextOperator Eql)
+            [ onEnter (NextOperator Op.Eql)
             , onInput NewInput
             , value model.currentInput
             , autofocus True
@@ -83,18 +70,6 @@ view model =
             []
         , viewButtonRow
        ]
-
-opToText : Op -> Html Msg
-opToText op =
-    let
-        opString = case op of
-            Add -> "+"
-            Minus -> "-"
-            Multi -> "*"
-            Div -> "/"
-            _ -> ""
-    in
-        text opString
 
 onEnter : Msg -> Attribute Msg
 onEnter msg =
@@ -106,6 +81,7 @@ onEnter msg =
                 Json.fail "not Enter"
     in
         on "keydown" (Json.andThen isEnter keyCode)
+
 
 -- Main
 
