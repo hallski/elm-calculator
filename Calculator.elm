@@ -16,15 +16,17 @@ type alias Model =
     , currentOp : Op.Op
     }
 
+
 init : ( Model, Cmd Msg )
 init =
     ( Model "" 0 Op.None, Cmd.none )
 
 
 -- Update
+
 type Msg
-    = NewInput (String)
-    | NextOperator (Op.Op)
+    = NewInput String
+    | NextOperator Op.Op
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -35,8 +37,10 @@ update msg model =
         NextOperator op ->
             handleNextOp model op
 
+
 parseFloat : String -> Float
 parseFloat = Result.withDefault 0.0 << String.toFloat
+
 
 handleNextOp : Model -> Op.Op -> ( Model, Cmd Msg )
 handleNextOp model op =
@@ -51,6 +55,7 @@ handleNextOp model op =
 
 
 -- View
+
 viewButtonRow : Html Msg
 viewButtonRow =
     div []
