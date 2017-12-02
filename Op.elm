@@ -7,26 +7,32 @@ import Html.Events exposing (onClick)
 type Op = None | Add | Minus | Multi | Div | Eql
 
 
-executeOp : Op -> Float -> Float -> Float
-executeOp op lhs rhs =
-    case op of
-        Add ->
-            lhs + rhs
+executeOp : Op -> Result String Float -> Float -> Result String Float
+executeOp op result rhs =
+    Result.andThen (eo op rhs) result
 
-        Minus ->
-            lhs - rhs
+eo op rhs lhs =
+    case (op, rhs) of
+        (Add, rhs) ->
+            Ok <| lhs + rhs
 
-        Multi ->
-            lhs * rhs
+        (Minus, rhs) ->
+            Ok <| lhs - rhs
 
-        Div ->
-            lhs / rhs
+        (Multi, rhs) ->
+            Ok <| lhs * rhs
 
-        Eql ->
-            lhs
+        (Div, 0) ->
+            Err "Inf"
 
-        None ->
-            lhs
+        (Div, rhs) ->
+            Ok <| lhs / rhs
+
+        (Eql, _) ->
+            Ok lhs
+
+        (None, _) ->
+            Ok lhs
 
 toString : Op -> String
 toString op =

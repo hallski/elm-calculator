@@ -12,14 +12,14 @@ import Events
 
 type alias Model =
     { currentInput : String
-    , result : Float
+    , result : Result String Float
     , currentOp : Op.Op
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" 0 Op.None, Cmd.none )
+    ( Model "" (Ok 0) Op.None, Cmd.none )
 
 
 -- Update
@@ -45,7 +45,7 @@ parseFloat = Result.withDefault 0.0 << String.toFloat
 handleNextOp : Model -> Op.Op -> ( Model, Cmd Msg )
 handleNextOp model op =
     if model.currentOp == Op.None then
-        ( { model | currentOp = op, result = parseFloat model.currentInput, currentInput = "" }, Cmd.none )
+        ( { model | currentOp = op, result = String.toFloat model.currentInput, currentInput = "" }, Cmd.none )
     else
         let
             result = parseFloat model.currentInput
@@ -58,18 +58,32 @@ handleNextOp model op =
 
 viewButtonRow : Html Msg
 viewButtonRow =
-    div []
-        [ Op.viewOpButton NextOperator Op.Add
-        , Op.viewOpButton NextOperator Op.Minus
-        , Op.viewOpButton NextOperator Op.Multi
-        , Op.viewOpButton NextOperator Op.Div
-        , Op.viewOpButton NextOperator Op.Eql
-        ]
+    let
+        opButton = \op ->
+            Op.viewOpButton NextOperator op
+    in
+        div []
+            [ opButton Op.Add
+            , opButton Op.Minus
+            , opButton Op.Multi
+            , opButton Op.Div
+            , opButton Op.Eql
+            ]
+
+
+resultString : Result String Float -> String
+resultString r =
+    case r of
+        Ok value ->
+            toString value
+        Err error ->
+            error
+
 
 view : Model -> Html Msg
 view model =
     div [ ]
-        [ div [ class "result" ] [ toString model.result |> text ]
+        [ div [ ] [ resultString model.result |> text ]
         , Op.toString model.currentOp |> text
         , input
             [ Events.onEnter (NextOperator Op.Eql)
