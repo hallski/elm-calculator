@@ -7,7 +7,7 @@ import Html.Events exposing (onClick)
 type Op
     = None
     | Add
-    | Minus
+    | Subtract
     | Multi
     | Div
     | Eql
@@ -39,7 +39,7 @@ getOp op =
         Add ->
             ("+", ok (+))
 
-        Minus ->
+        Subtract ->
             ("-", ok (-))
 
         Multi ->

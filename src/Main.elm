@@ -77,7 +77,7 @@ viewButtonRow =
     in
         div []
             [ opButton Op.Add
-            , opButton Op.Minus
+            , opButton Op.Subtract
             , opButton Op.Multi
             , opButton Op.Div
             , opButton Op.Eql
