@@ -23,10 +23,9 @@ divide lhs rhs =
             Ok <| lhs / rhs
 
 
-ok : (Float -> Float -> Float) -> (Float -> Float -> Result String Float)
-ok op =
-    \lhs rhs ->
-        Ok <| op lhs rhs
+ok : (Float -> Float -> Float) -> Float -> Float -> Result String Float
+ok op lhs rhs =
+    Ok <| op lhs rhs
 
 
 okLhs : Float -> Float -> Result String Float
