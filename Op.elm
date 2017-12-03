@@ -55,17 +55,22 @@ getOp op =
             ("", okLhs)
 
 
-executeOp : Op -> Result String Float -> Float -> Result String Float
-executeOp op result rhs =
-    let
-        f = (flip <| Tuple.second <| getOp op) <| rhs
-    in
-        Result.andThen f result
-
-
 toString : Op -> String
 toString =
     Tuple.first << getOp
+
+
+toFunction : Op -> (Float -> Float -> Result String Float)
+toFunction =
+    Tuple.second << getOp
+
+
+executeOp : Op -> Result String Float -> Float -> Result String Float
+executeOp op result rhs =
+    let
+        f = rhs |> flip (toFunction op)
+    in
+        Result.andThen f result
 
 
 viewOpButton : (Op -> msg) -> Op -> Html msg
