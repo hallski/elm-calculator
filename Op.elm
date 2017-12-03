@@ -14,22 +14,22 @@ type Op
 
 
 divide : Float -> Float -> Result String Float
-divide lhs rhs =
-    case rhs of
+divide divident divisor =
+    case divisor of
         0 ->
             Err "Inf"
 
-        rhs ->
-            Ok <| lhs / rhs
+        _ ->
+            Ok <| divident / divisor
 
 
 ok : (Float -> Float -> Float) -> Float -> Float -> Result String Float
-ok op lhs rhs =
-    Ok <| op lhs rhs
+ok op x y =
+    Ok <| op x y
 
 
-okLhs : Float -> Float -> Result String Float
-okLhs v _ =
+okFirst : Float -> Float -> Result String Float
+okFirst v _ =
     Ok v
 
 
@@ -49,10 +49,10 @@ getOp op =
             ("/", divide)
 
         Eql ->
-            ("=", okLhs)
+            ("=", okFirst)
 
         None ->
-            ("", okLhs)
+            ("", okFirst)
 
 
 toString : Op -> String
@@ -66,13 +66,13 @@ toFunction =
 
 
 executeOp : Op -> Result String Float -> Float -> Result String Float
-executeOp op result rhs =
+executeOp op acc value =
     let
-        f = rhs |> flip (toFunction op)
+        f = flip (toFunction op) <| value
     in
-        Result.andThen f result
+        Result.andThen f acc
 
 
 viewOpButton : (Op -> msg) -> Op -> Html msg
 viewOpButton msg op =
-    button [ onClick (msg op) ] [ text (toString op) ]
+    button [ onClick <| msg op ] [ text <| toString op ]
