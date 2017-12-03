@@ -34,6 +34,7 @@ update msg model =
     case msg of
         NewInput txt ->
             ( { model | currentInput = txt }, Cmd.none )
+
         NextOperator op ->
             handleNextOp model op
 
@@ -45,13 +46,25 @@ parseFloat = Result.withDefault 0.0 << String.toFloat
 handleNextOp : Model -> Op.Op -> ( Model, Cmd Msg )
 handleNextOp model op =
     if model.currentOp == Op.None then
-        ( { model | currentOp = op, result = String.toFloat model.currentInput, currentInput = "" }, Cmd.none )
+        ( { model
+          | currentOp = op
+          , result = String.toFloat model.currentInput
+          , currentInput = ""
+          }
+        , Cmd.none
+        )
     else
         let
             result = parseFloat model.currentInput
-                        |> Op.executeOp model.currentOp model.result
+                       |> Op.executeOp model.currentOp model.result
         in
-            ({ model | result = result, currentOp = op, currentInput = "" }, Cmd.none)
+            ( { model
+              | result = result
+              , currentOp = op
+              , currentInput = ""
+              }
+            , Cmd.none
+            )
 
 
 -- View
@@ -59,7 +72,7 @@ handleNextOp model op =
 viewButtonRow : Html Msg
 viewButtonRow =
     let
-        opButton = \op ->
+        opButton op =
             Op.viewOpButton NextOperator op
     in
         div []
@@ -83,10 +96,10 @@ resultString r =
 view : Model -> Html Msg
 view model =
     div [ ]
-        [ div [ ] [ resultString model.result |> text ]
-        , Op.toString model.currentOp |> text
+        [ div [ ] [ text <| resultString model.result ]
+        , text <| Op.toString model.currentOp
         , input
-            [ Events.onEnter (NextOperator Op.Eql)
+            [ Events.onEnter <| NextOperator Op.Eql
             , onInput NewInput
             , value model.currentInput
             , autofocus True
