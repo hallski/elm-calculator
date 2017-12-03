@@ -26,7 +26,7 @@ divide lhs rhs =
 ok : (Float -> Float -> Float) -> (Float -> Float -> Result String Float)
 ok op =
     \lhs rhs ->
-        op lhs rhs |> Ok
+        Ok <| op lhs rhs
 
 
 okLhs : Float -> Float -> Result String Float
